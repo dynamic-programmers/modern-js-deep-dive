@@ -1,6 +1,8 @@
 # 모던 자바스크립트 딥 다이브 3개월 완독 프로젝트
 목적: JS를 기초부터 차근차근 익힌다. 
+
 책 링크: http://www.yes24.com/Product/Goods/92742567
+
 기간: 5.10(월) ~ 8.1(일) 총 84일
 # 규칙
 1. 오픈 채팅방 주도 진행 [주소](https://open.kakao.com/o/gXNDEfcd)
