@@ -85,4 +85,105 @@ undefined은 JS 엔진이 변수를 초기화하 데 사용하므로 의도적�
 1+true = 2
 ```
 
+비교연산자
+
+동등 비교 연산자(==)는 암묵적으로 피연산자의 타입을 변환해 비교한다.
+
+반면 일치 비교 연산자(===) 는 타입과 값을 비교한다.
+
+예외
+```js
+NaN === NaN // false
+isNaN(NaN) // true
+isNaN(1+undefined) // true
+
+-0 === +0 // true
+// ES6, 더 예측가능한 비교를 위해서 Object.is 사용
+Object.is(-0,+0) // false
+Object.is(NaN,NaN) // true
+```
+
+js는 python과 다르게 set에 대해 논리 연산자(||, &&, !)를 쓸 수 없다.
+```py
+set([1,2,3]) | set([3,4,5]) # {1,2,3,4,5}
+set([1,2,3]) & set([3,4,5]) # {3}
+set([1,2,3]) - set([3,4,5]) # {1,2}
+```
+
+```js
+const union = (first, second) => { // first: set, second: set
+  const union = [...first]; 
+  second.forEach((value) => { if (!union.includes(value)) union.push(value); }) 
+  // 없을 때에만 추가 해준다. (합집합 중복 방지)
+  return union;
+}
+
+const intersect = function(first, second) { // first: set, second: set
+  return first.filter(value => second.includes(value)); // 둘 다 있으면 교집합
+}
+
+const complement = function(first, second) { // first: set, second: set
+  return first.filter(value => !second.includes(value)); // 중복되는 것 제거하면 차집합
+}
+
+
+const setA = new Set([1,2,3])
+const setB = new Set([3,4,5]);
+
+union(setA, setB); // Set([1,2,3,4,5])
+intersect(setA, setB); // Set([3])
+complement(setA, setB); // Set([1,2])
+complement(setB, setA); // Set([4,5])
+```
+
+js 버그
+
+```js
+typeof null // null이 아닌 object가 나온다.
+// 따라서 null 타입 확인시 일치 연산자(===)를 사용
+foo = null
+foo === null // true
+```
+
+지수 연산자
+```js
+2**2 = 4 // 2^2
+Math.pow(2,2) = 4// 2^2
+// 주의!!
+-5 ** 2 = error // 반면 c 계열, python은 -25가 나온다. 왼쪽 피연산자를 양수로 암묵적 변환 후 5^2 계산, 음수를 입혀준다. 아래의 방법으로 해야 잘 나온다.
+
+(-5) ** 2 - 1 = -25 
+```
+
+## 8장 제어문
+제어문(Control flow statement)은 조건에 따라 코드 블록을 실행, 반복 실행 할 때 사용된다. `if(true)`
+
+블록문(block statement)는 0개 이상의 문을 중괄호로 묶은 것이다. `{ f() }`
+
+```js
+// 아래와 같이 케이스 문 실행 후 탈출하지 않고 진행하는 것을 fall through라 부른다.
+x=0
+switch (5):
+  case 5:
+    x+=5
+  default:
+    x+=1
+// x=6 
+```
+
+break 문
+
+break문은 속해있는 반복문을 탈출한다.
+```js
+cnt=0
+for (let i=0;i<5;i+=1) {
+  for (let j=0;j<5;j+=1) {
+    cnt+=1
+    break
+  }
+}
+
+//cnt = 5
+```
+
 
