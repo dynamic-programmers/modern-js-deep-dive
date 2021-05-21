@@ -156,36 +156,3 @@ Math.pow(2,2) = 4// 2^2
 
 (-5) ** 2 - 1 = -25 
 ```
-
-## 8장 제어문
-제어문(Control flow statement)은 조건에 따라 코드 블록을 실행, 반복 실행 할 때 사용된다. `if(true)`
-
-블록문(block statement)는 0개 이상의 문을 중괄호로 묶은 것이다. `{ f() }`
-
-```js
-// 아래와 같이 케이스 문 실행 후 탈출하지 않고 진행하는 것을 fall through라 부른다.
-x=0
-switch (5):
-  case 5:
-    x+=5
-  default:
-    x+=1
-// x=6 
-```
-
-break 문
-
-break문은 속해있는 반복문을 탈출한다.
-```js
-cnt=0
-for (let i=0;i<5;i+=1) {
-  for (let j=0;j<5;j+=1) {
-    cnt+=1
-    break
-  }
-}
-
-//cnt = 5
-```
-
-
