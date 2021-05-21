@@ -124,4 +124,61 @@ var person = {
 1. 마침표 프로터피 접근 연산자(.) 
 2. 대괄호 프로퍼티 접근 연산자([])
 
+주의: 객체에 존재하지 않는 프로퍼티 접근시 에러가 아닌 undefined가 반환된다.
+
+## 10.7 프로퍼티 동적 생성
+typescript에서는 아래와 같은 방법으로 동적 생성한다.
+```ts
+const person: {[key:string]: any} = {
+    id: 1234
+}
+person["test"] = 3
+```
+
+## 10.8 프로퍼티 삭제
+delete 연산자로 객체의 프로퍼티를 삭제할 수 있다. 단, typescript에서는 쓰지 않는 것이 좋다.(4.0 이상해서는 에러 발생)
+```ts
+var person = {
+  name: 'Jack'
+}
+delete person.name
+console.log(person.name.length) // TypeError: Cannot read property 'length' of undefined
+
+// 위보다는 아래의 구조분해할당으로 프로퍼티를 제거한다.
+const person = {
+    id: 'test'
+}
+const { id, ...rest} = person
+console.log(rest) // {}
+```
+
+# 11장 원시 값과 객체의 비교
+데이터 타입을 원시 값과 객체 타입으로 구분하는 이유
+
+1. 원시 타입: 변경 불가능한 값
+
+원시 값을 변수에 할당하면 변수에는 실제 값이 저장된다.
+
+원시 값을 다른 변수에 할당하면 원시 값이 복사되어 전달된다. - pass by value
+
+2. 객체 타입: 변경 가능한 값
+
+객체를 변수에 할당하면 변수에는 참조 값이 저장된다.
+
+객체를 다른 변수에 할당하면 참조 값이 복사되어 전달된다. - pass by reference
+
+성능 면에서는 이론적으로 클래스 기반 프로그래밍이 더 좋다. 왜냐하면 인스턴스가 할당된 이후에 프로퍼티를 추가 할 수 없기 때문이다.
+
+자바스크립트 객체는 프로퍼티 키를 인덱스로 사용하는 해시 테이블이라고 생각할 수 있다.
+
+JS에서는 원시, 객체 변수를 생성하면 메모리에 새로운 공간이 할당되고 그 곳에 값이 저장된다.
+
+그렇기 때문에 객체 변수 A를 다른 변수 B에 할당하면 B의 메모리 공간에 A의 주소값이 저장된다. 반면 JAVA와 같은 언어는 A,B 같은 메모리 공간을 갖는다.  - call by sharing
+
+![callBySharing](callbysharing.jpg)
+
+python의 경우 A, B가 서로 같은 메모리 주소를 쓰고있다가 재할당이 이뤄지면 비로소 서로 다른 메모리 주소 공간이 만들어진다.
+
+
+
 
