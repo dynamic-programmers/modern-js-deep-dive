@@ -651,7 +651,6 @@ score = 100;
 let person = {
   name: "jeon",
 };
-// 얕은 복사
 let copy = person;
 ```
 
