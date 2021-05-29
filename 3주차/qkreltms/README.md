@@ -165,4 +165,148 @@ bar() // 1
 2. 함수를 어디서 정의했는지에 따라 상위 스코프를 결정한다. => 렉시컬 스코프(JS는 렉시컬 스코프이다!!)
 
 # 14 전역 변수의 문제점
+## 14.1.1 변수의 생명 주기
+전역 변수의 생명 주기 == App 생명주기
+
+함수 내부 지역 변수 생명 주기 == 함수 생명 주기
+
+만약 함수 안에 var 키워드를 사용하는 식별자가 있어도 함수와 생명주기를 같이한다.
+
+단, 어떤것이 어떤 함수A가 생성한 스코프를 참조하고 있다면 그 스코프는 소멸하지 않고 생존한다.
+
+```js
+var x = 'global'
+function foo() {
+console.log(x) // 만약 let키워드를 쓴다면 참조 에러 발생
+var x = 'local'
+}
+foo() // undefined
+console.log(x) // global
+```
+위의 코드에서 foo 함수 내부에 선언된 지역 변수 x는 foo를 호출하는 순간 선언되었고 undefined로 초기화 되어있다. 따라서 global x가 아닌 local x를 바라본다. 즉, 호이스팅은 스코프를 단위로 동작한다.
+
+만약 var 키워드가 아닌 let 키워드를 사용한다면 참조 에러가 발생한다.
+## 14.1.2 전역 변수의 생명 주기
+c나 java는 main 함수와 같은 진입점이 있지만 js는 그렇지 않다.
+
+그러므로 전역 변수는 런타임 이전에 곧바로 해석되고 실행된다.
+
+전역 변수는 전역 객체 window의 프로퍼티다. (window, self, this, frames, global) ES11 이후부터는 globalThis로 통일되었다.
+
+node에서는 global이다.
+
+## 14.2. 전역 변수의 문제점
+1. 암묵적 결합
+코드 어디서는 참조하고 할당할 수 있다. 즉, 암묵적 결합(implicit coupling)을 허용한다.
+2. 긴 생명 주기
+애플리케이션과 생명주기를 같이하므로 메모리 리소스도 오랜 기간 소비하게 된다.
+
+3. 스코프 체인 상에서 종점에 존재
+전역 변수의 검색 속도가 가장 느리다.
+
+4. 네임스페이스 오염
+자바스크립트의 가장 큰 문제점 중 하나는 파일이 분리되어 있다고 해도 하나의 전역 스코프를 공유한다는 점이다.(window에 붙음)
+
+## 14.3 전역 변수 사용 억제하는 방법
+1. 즉시 실행 함수
+즉시 실행 함수로 감싸면 함수의 지역 변수가 된다.
+2. 모듈 패턴
+모듈 패턴은 클래스를 모방해서 관련있는 변수와 함수를 모아 즉시 실행 함수로 감싼다.
+
+모듈 패턴은 클로저를 기반으로 동작한다.
+```js
+var Counter = (function() {
+  var num=0
+  return {
+    increase() {
+      return ++num
+    }
+    decrease() {
+      return --num
+    }
+  }
+})()
+Counter.increase() // 1
+Counter.increase() // 2
+Counter.decrease() // 1
+```
+3. 모듈 패턴
+ES6 모듈은 파일 자체의 독자적인 모듈 스코프를 제공한다.
+
+모듈 내의 var 키워드 식별자는 더는 전역 변수가 아니며 window 객체의 프로퍼티도 아니다.
+
+```html
+<script type="moulde" src="test.src"></script>
+```
+4. 네임스페이스 객체
+전역에 네임스페이스를 담당하는 객체를 생성하고 변수를 프로퍼티로 추가한다. 단, 전역 변수와 다를바가 없다.
+```js
+var MYAPP={}
+MYAPP.name="test"
+```
+
 # 15 let, const 키워드와 블록 레벨 스코프
+## 15.1 var 키워드로 선언한 변수의 문제점
+1. 변수 중복 선언 허용
+```js
+var x=1
+var x=2 // 에러를 발생시키지 않고 x를 재할당한다.
+```
+2. 함수 레벨 스코프
+```js
+var x=10
+for (var v=0;v<5;v+=1) {}
+console.log(x) // 5
+```
+3. 변수 호이스팅
+```js
+console.log(foo) // undefined
+var f=123
+console.log(foo) // 123
+```
+
+## 해결 방법
+## 15.2 let 키워드
+1. 변수 중복 선언 금지
+```js
+let x=1
+let x=2 // SyntaxError: Identifier 'x' has already been declared
+```
+2. 블록 레벨 스코프
+```js
+let x=1
+{
+  let x=2
+  console.log(x) // 2
+}
+console.log(x) // 1
+```
+3. 변수 호이스팅이 해결된 것 처럼 보인다.
+```js
+// 변수 선언 단계, JS엔진에 의해 x의 공간이 할당됐다. 다만, var과 다르게 초기화 전 호출시 에러가 발생한다.
+console.log(x) // ReferenceError: x is not defined
+let x // 변수 초기화 단계 
+console.log(x) // undefined
+x=1 // 값 할당 단계
+console.log(x) // 1
+{
+  // 에러 메시지가 변경됐다. 즉, 변수 호이스팅이 발생했지만 그렇지 않은 것 처럼 보인다.
+  console.log(x) // ReferenceError: Cannot access x before initialization
+  let x=2
+}
+```
+let 키워드로 선언한 식별자는 선언 단계, 초기화 단계가 분리되어 진행된다.
+
+즉, JS엔진에 의해 암묵적으로 선언 단계가 먼저 실행되지만 초기화 단계는 변수 선언문에 도달했을 때 실행된다.
+
+변수 선언 단계에서 변수 초기화 단계 전까지를 일시적 사각지대(TDZ)라 부른다.
+
+## 15.3 const 키워드
+let 과 방식이 비슷하지만 상수를 지원하기 위해 사용한다.
+
+const 키워드로 선언한 변수는 반드시 선언과 동시에 초기화해야 한다.
+
+const 키워드로 선언된 객체의 프로퍼티 값을 변경할 수 있다, 할당된 객체의 주소값이 바뀌지 못할 뿐이다.
+
+ES6부터는 기본적으로 const 키워드를 쓰다가 필요시 let 키워드를 활용한다.
+
