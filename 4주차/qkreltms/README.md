@@ -81,7 +81,7 @@ foo() // [[Call]] 호출
 new foo() // [[Construct]] 호출
 
 // [[Call]], [[Construct]] 둘 다 되는 것
-const baz={ x: function () {} } // method아님! 일반함수
+const baz={ x: function () {} } // method아님! 일반함수 취급됨, 단 편의상 method라 부름
 function x() {}
 
 // [[Call]] 만 되는 것, new 사용시 에러 발생
@@ -191,9 +191,22 @@ function Circle(radius) {
 Circle.prototype.getArea=function() { return 'test' }
 const circle1 = new Circle(1)
 const circle2 = new Circle(1)
-// getArea를 호출할 때 객체의 프로퍼티에 함수가 없다면 prototype 체인을 올라가며 찾는다.
+// getArea를 호출할 때 객체의 프로퍼티에 함수가 없다면 prototype 체인을 올라가며 찾는다. 없다면 undefined를 반환한다.
 circle1.getArea()
 circle2.getArea()
+
+// 아래와 같이 상속 관계를 동적으로 변경하는것 권장하지 않음!!
+// object로 프로토타입 변경
+Circle.prototype = {
+  // 아래 주석해제하면 Persone으로 다시 바인딩됨
+  // constructor: Person
+  sayHello() { console.log ('test2')}
+}
+// 또는 다음 함수사용 Object.setPrototypeOf(circle1, Circle)
+circle1=new Circle()
+circle2=new Circle()
+circle1.constructor === Object // true
+circle2.constructor === Object // true
 ```
 
 ## 19.3.3 프로토타입의 constructor 프로퍼티와 생성자 함수
@@ -204,10 +217,157 @@ const me=new Person('test')
 me.constructor === Person // true, me에는 constructor가 없으므로 프로토타입 체인을 따라가 Person의 constructor 가리킴
 ```
 ## 19.4 리터럴 표기법에 의해 생성된 객체의 생성자 함수와 프로토타입
+함수에 의해 생성된 인스턴스는 프로토타입의 constructor 프로퍼티에 의해 생성자 함수와 연결된다.
 ```js
 const obj=new Object()
 obj.constructor === Object // true
 new Function('a','return a').constructor === Function // true
 const obj2={}
 obj.constructor === Object // true
+```
+객체가 어떻게 생성됐냐에 따라 동작의 차이가 있다.
+```js
+// 인수가 전달되지 않았을 때 빈 객체를 생성한다.
+let obj = new Object()
+obj // {}
+// 인수가 전돨되면 인수를 객체로 변환한다.
+obj = new Object(123)
+obj//Number {123}
+obj = new Object('123')
+obj// String {'123'}
+
+// new.target(new 로 생성시 this 반환) 이 undefined나 Object가 아닌 경우
+// 인스턴스 -> Foo.prototype -> Object.prototype 순으로 프로토 타입 체인 생성
+class Foo extends Object{}
+new Foo() // Foo {} 
+
+function foo() {}
+foo.constructror === Function // true
+```
+## 19.5.2 빌트인 생성자 함수와 프로토타입 생성 시점
+전역 객체 window 등이 생성될 때 빌트인 생성자 함수, 프로토타입이 생성된다.
+Object, String, etc...
+
+## 19.8 오버라이딩과 프로퍼티 섀도잉
+아래와 같은 행동을 오버라이딩, 프로퍼티 섀도잉이라고 한다.
+
+me.sayHello()를 호출했을 때 Person 함수를 덮어쓰는 것이 아니라 
+
+먼저 me에서 sayHello를 찾고 없을시 프로토타입 체인을 올라가 Person에서 찾는다. 삭제할 때도 마찬가지이다.
+```js
+const Persion = (function() {
+  // 생성자 함수
+  function Person(name) { 
+    this.name = name;
+  }
+  Person.prototype.sayHello=function(){
+    console.log('HI')
+  }
+})()
+const me = new Person('lee')
+me.sayHello=function() {
+  console.log('Hey!!')
+}
+me.sayHello() // 'Hey!!'
+```
+
+오버라이딩: 상위 클래스가 가지고 있는 메서드를 하위 클래스가 재정의하여 사용하는 방식
+
+오버로딩: 함수의 이름은 동일하지만 매개변수의 타입 또는 개수가 다르게 구현하고 매개변수에 의해 메서드를 구별하여 호출하는 방식
+javascript에서는 오버로딩 지원하지 않지만 arguments객체를 사용하여 구현할 수는 있다.
+
+## 19.10 instanceof 연산자
+우변의 생성자 함수의 prototype에 바인딩된 객체가 좌변의 객체의 프로토타입 체인 상에 존재하는지 유무 판별
+```js
+[객체] instanceof [생성자 함수]
+```
+```js
+function Person(){}
+const me = new Person()
+me instanceof Person // true
+me instanceof Object // true
+```
+## 19.11 직접 상속
+Object.create에 의한 직접 상속
+
+명시적으로 프로토타입을 지정하여 새로운 객체를 생성한다.
+
+new 연산자 없이 객체 생성가능
+```js
+// param1: 생성할 객체의 프토로토타입으로 지정할 객체
+// param2: 생성할 객체가 갖을 프로퍼티
+let obj = Object.create(Object.prototype, { x: { value: 1, writable: true, enumerable: true, configurable: true}})
+obj.x // 1
+
+let obj2 = Object.create(null)
+obj2.__proto__ // undefined
+```
+## 19.12 정적 프로퍼티/메서드
+Object.craete와 같이 인스턴스를 생성하지 않아도 호출할 수 있는 Object에 속해있는 프로퍼티/메서드, 프로토타입 체인 상에 존재함 => 정적 메서드
+
+```js
+function Foo() {
+  Foo.prototype.x=() => 'x'
+}
+const foo=new Foo()
+// 프로토타입 메서드를 호출하려면 인스턴스를 생성해야 한다. 
+foo.x() // 'x'
+
+Foo.x=()=>'y'
+// 인스턴스를 생성하지 않고 호출 가능 -> 정적 메서드
+Foo.x()//y
+```
+## 19.13 프로퍼티 존재 확인
+1. in 연산자
+
+in 연산자는 확인 대상 객체의 프로퍼티뿐만 아니라 객체가 상속받은 모든 프로토타입의 프로퍼티를 확인한다.
+```js
+let person={}
+'toString' in person // true
+
+// ES6에서는 in 과 기능이 같은 Reflect.has를 써도 된다.
+Reflect.has(person, 'toString') // true
+```
+2. Object.prototype.hasOwnProperty 메서드
+in과 기능이 같지만 상속받은 프로토타입의 프로퍼티인 경우 false를 반환한다.
+
+```js
+person.hasOwnProperty('toString') // false
+```
+## 19.14 프로퍼티 열거
+1. for ... in 문
+in과 같이 상속받은 포로토타입의 프로퍼티까지 열거한다.
+
+[[Enumerable]]이 true인 값만 순회한다. Symbol 프로퍼티는 열거하지 않는다.
+
+모던 브라우저에서는 순서를 보장하고 숫자인 키에 대해서는 정렬을 실시한다.
+```js
+const obg ={ 2:2,3:3 }
+for (const key in obj) {
+  if (!obj.hasOwnProperty(key)) continue
+  console.log(key+':'+obj[key])
+}
+/*
+2: 2
+3: 3
+*/
+```
+
+2. forEach, for...of, for 사용해 상속받은 프로퍼티 열거하지 않음
+```js
+const arr=[1,2,3]
+arr.x=10
+for (const i in arr) {
+  console.log(arr[i]) //1,2,3,10
+}
+arr.forEach(v=> console.log(v)) // 1,2,3
+```
+
+3. Object.keys, values, entires 사용해 상속받은 프로퍼티 열거하지 않음
+```js
+const person = {
+  name: 'junghoon',
+  __proto__: { age: 20 }
+}
+Object.keys(person) // ['name']
 ```
