@@ -195,7 +195,7 @@ obj.foo() //window
 ```js
 function Person() {}
 Person.prototype.getName=function() {return this}
-// prototype의 new 없이는 사용 불가
+// Person 인스턴스 생성없이 prototype 프로퍼티 사용 불가
 new Person().getName() // Person
 window.Person().getName() // Person 
 ```
