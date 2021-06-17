@@ -106,6 +106,7 @@ function Circle(radius) {
 }
 ```
 Object, Function 생성자 함수는 new 연산자 없이 호출해도 new 연산자와 함께 호출했을 때와 동일하게 동작
+
 ```js
 let obj=new Object()
 obj// {}
@@ -208,6 +209,35 @@ circle2=new Circle()
 circle1.constructor === Object // true
 circle2.constructor === Object // true
 ```
+## 19.3.2 함수 객체의 prototype 프로퍼티
+```js
+const Person = name => {
+  this.name=name
+}
+console.log(Person.hasOwnProperty('prototype')) // false, 생성자 함수가 아니므로 prototype 프로퍼티가 존재하지 않는다.
+const obj = {
+  foo() {}
+}
+console.log(obj.foo.hasOwnProperty('prototype')) // false
+```
+```js
+            소유        사용 주체    사용 목적
+__proto__   모든 객체   모든 객체    객체가 자신의 프로토타입에 접근 또는 교체하기 위해 사용
+prototype   constructor 생성자 함수  생성자 함수가 자신이 생성할 인스턴스의 프로토타입을 할당하기 위해 사용
+```
+
+*NOTE: __proto__는 [Mozila에서 deprecated 됐다.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/proto) 대신 Object.getPrototypeOf 사용
+
+**함수는 객체가 가지고 있는 속성을 갖고 있지만** 추가적으로 내부 메서드 [[Call]]과 [[Construct]]를 갖고있다.
+
+```js
+function foo(){}
+console.log(foo.__proto__ === Object.getPrototypeOf(foo))
+console.log(Object.getPrototypeOf(foo).constructor) // function Function() { [native code] }
+// 함수는 객체가 갖고있는 __proto__ 프로퍼티또한 갖고 있다.
+console.log(foo.__proto__)  // function Function() { [native code] }
+console.log(foo.prototype.constructor) // function foo() {}
+```
 
 ## 19.3.3 프로토타입의 constructor 프로퍼티와 생성자 함수
 constructor는 생성자 함수를 가리킨다.
@@ -244,6 +274,11 @@ new Foo() // Foo {}
 function foo() {}
 foo.constructror === Function // true
 ```
+## 19.5.5 프로토타입의 생성시점
+프로토타입은 생성자 함수가 생성되는 시점에 같이 생성된다.
+
+프로토타입 자신도 프로토타입을 같는다. 단, 이경우에는 Object.getPrototypeOf()를 통해 가져올 수 있음
+
 ## 19.5.2 빌트인 생성자 함수와 프로토타입 생성 시점
 전역 객체 window 등이 생성될 때 빌트인 생성자 함수, 프로토타입이 생성된다.
 Object, String, etc...
@@ -253,7 +288,7 @@ Object, String, etc...
 
 me.sayHello()를 호출했을 때 Person 함수를 덮어쓰는 것이 아니라 
 
-먼저 me에서 sayHello를 찾고 없을시 프로토타입 체인을 올라가 Person에서 찾는다. 삭제할 때도 마찬가지이다.
+new로 생성한 인스턴스에만 해당, 먼저 me에서 sayHello를 찾고 없을시 프로토타입 체인을 올라가 Person에서 찾는다. 삭제할 때도 마찬가지이다.
 ```js
 const Persion = (function() {
   // 생성자 함수
