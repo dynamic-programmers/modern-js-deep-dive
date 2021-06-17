@@ -260,9 +260,19 @@ console.log(x) // 5
 ```
 3. 변수 호이스팅
 ```js
-console.log(foo) // undefined
+console.log(f) // undefined
 var f=123
-console.log(foo) // 123
+console.log(f) // 123
+window.f // 123
+
+// 단, var 키워드 사용하지 않으면 단지 프로퍼티로 추가된다. 변수가 아니다.
+console.log(f2) // error
+f2=123
+console.log(f2) // 123
+window.f2 //123
+
+delete f // 전역 변수는 삭제되지 않는다.
+delete f2 // 프로퍼티는 삭제된다.
 ```
 
 ## 해결 방법
