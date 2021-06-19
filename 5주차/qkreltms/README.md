@@ -213,6 +213,15 @@ const test2 = () => this
 test2.apply(thisArg) // window
 ```
 
+this 바인딩 정리
+```
+함수 호출 방식                      this 바인딩
+일반 함수 호출                      전역 객체
+메서드 호출                         메소드를 호출한 객체
+생성자 함수 호출                    생성자 함수가(미래에) 생성할 인스턴스
+Function.prototype.apply/call/bind  인수로 전달한 객체
+
+```
 # 23 실행 컨텍스트
 ## 23.1 소스코드 타입
 1. 전역 코드
