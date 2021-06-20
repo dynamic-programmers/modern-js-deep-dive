@@ -332,3 +332,140 @@ class MyArray extends Array {
     ...
 }
 ```
+
+# 26 ES6함수의 추가 기능
+## 26.1 함수의 구분
+ES6이전에는 메서드의 정의가 다양했다. ES6 이전의 모든 함수는 일반 함수로서 호출할 수 있는 것은 물론 생성자 함수로서 호출할 수 있다.
+```js
+var foo = function(){}
+foo()
+new foo()
+
+var obj={
+    f: function() {}
+}
+obj.f()
+new obj.f()
+
+[1,2,3].map(function (item) {
+    return item*2
+})
+```
+객체에 바인딩된 함수가 constructor라는 것은 불필요하게 prototype 객체도 생성한다는 것을 의미한다.
+
+그러나 ES6이후 부터는 함수를 사용 목적에 따라 세 가지 종류로 명확히 구분했다.
+```
+ES6 함수의 구분     constructor     prototype     super                 arguments
+일반 함수           O               O               X                       O
+메서드              X               X               O[[HomeObject]]         O
+화살표 함수         X               X               X                       X
+```  
+
+## 26.2 메서드
+ES6 사양에서 메서드는 메서드 축약 표현으로 정의된 함수만을 의미한다.
+```js
+const obj = {
+    foo() { return this.x },
+    // 다음은 ES6 이후부터는 메서드가 아니다.
+    bar: function() {}
+}
+new obj.foo()
+// Uncaught TypeError: obj.foo is not a constructor at <anonymous>:1:1
+new obj.bar()
+// bar {}
+```
+
+ES6 메서드는 자신을 바인딩한 객체를 가리키는 내부 슬롯 [[HomeObject]]를 갖고, 이로인해 super을 사용할 수 있다.
+
+메서드를 정의할 때 프로퍼티 값으로 익명 함수 표현식을 할당하는 ES6 이전의 방식은 사용하지 않는것이 좋다.
+
+## 26.3 화살표 함수
+```js
+() => {}
+```
+화살표 함수는 표현만 간략한 것이 아니라 내부 동작도 기존의 함수보다 간략하다.
+
+## 26.3.2 화살표 함수와 일반 함수의 차이
+1. 화살표 함수는 non-constructor이다. 
+2. prototype이 없다.
+3. strict mode가 아닌 일반함수에서는 허용됐지만, 중복된 매개변수 이름을 선언할 수 없다.
+4. this, arguments, super, new.target 바인딩을 갖지 않는다.
+## 26.3.3 this
+화살표 함수에서 this 사용시 상위 스코프의 this를 사용한다. 이를 lexical this라 한다.
+```js
+const foo = () => this
+foo() // window
+
+(function () {
+    const foo = () => this
+    foo() // { a: 1}
+}).call({ a: 1})
+```
+call, apply, bind 사용시 교체할 수 없고 언제나 상위 스코프의 this 바인딩을 참조한다.
+
+객체 안의 화살표 함수 안의 this는 window를 가리키므로 사용 권장하지 않는다.
+```js
+const person = {
+    name: 'lee',
+    sayHi:()=>console.log(`Hi ${this.name}`)
+}
+person.sayHi() // Hi 
+```
+이 경우 ES6 메서드 축약 표현을 사용하라.
+
+프로토타입 객체의 프로퍼티에 화살표 함수를 할당하는 경우도 동일한 문제가 발생한다.
+```js
+function Person(name) {
+    this.name=name
+}
+Person.prototype.sayHi=()=>console.log(`Hi, ${this.name}`)
+const person=new Person('lee')
+person.sayHi() // Hi,
+```
+일반 함수가 아닌 ES6 메서드를 동적 추가하고 싶다면...
+```js
+// 객체도 상속이 가능하다.
+function Person(name) {
+    this.name=name
+}
+Person.prototype = {
+    constructor: Person,
+    sayHi() { console.log(`Hi ${this.name}`)}
+}
+const person = new Person('lee')
+person.sayHi() // Hi Lee
+```
+클래스 필드에 화살표 함수를 할당할 수 있지만, 좋지 않다.
+```js
+class Person {
+    name='Lee',
+    sayHi=()=>console.log(`Hi ${this.name}`)
+}
+const person=new Person()
+person.sayHi() // Hi Lee
+```
+
+클래스 필드에 할당한 화살표 함수의 this는 프로토타입 메서드가 아니라 인스턴스 메서드가 된다.
+
+## 26.3.4 super
+화살표 함수의 super는 상위 스코프의 super를 참조한다.
+
+## 26.3.5 arguments
+마찬가지로 상위 스코프를 참조한다.
+## 26.4 Rest 파라미터
+1. Rest 파라미터는 함수에 전달된 인수들의 목록을 배열로 전달받는다.
+
+2. Rest 파라미터는 반드시 마지막 파라미터이어야 한다.
+
+3. Rest 파라미터는 함수 정의 시 선언한 매개변수 개수를 나타내는 함수 객체의 length 프로퍼티에 영향을 주지 않는다.
+```js
+function foo(...rest) {}
+console.log(foo.length) // 0
+
+function foo(x,...rest) {}
+console.log(foo.length) // 1
+```
+
+4. Rest 파라미터에는 기본값을 지정할 수 없다.
+
+* NOTE: 기본 값은 arguments에 영향을 끼치지 않는다.
