@@ -202,3 +202,133 @@ Person.sayHi() // Hi!
 const me = new Person('Lee')
 me.sayHi()// error
 ```
+## 25.5.4 정적 메서드와 프로토타입 메서드의 차이
+1. 정적 메서드와 프로토타입 메서드는 자신이 속해 있는 프로토타입 체인이 다르다.
+2. 정적 메서드는 클래스로 호출하고 프로토타입 메서드는 인스턴스로 호출한다.(new 사용해서)
+3. 정적 메서드는 인스턴스 프로퍼티를 참조할 수 없지만 프로톹타입 메서드는 인스턴스 프로퍼티를 참조할 수 있다.
+
+장점: 정적 메서드는 인스턴스를 만들지 않고 바로 쓸 수 있어 편하다.
+## 25.7.3 클래스 필드 정의 제안
+자바스크립트의 클래스 몸체에서는 메서드만 선언할 수 있다.
+```js
+class Person {
+    name='Lee'
+}
+const me = new Person('LEE')
+```
+하지만 Chrome 72, Node 12이상부터는 가능하다.
+
+## 25.7.4 private 필드 정의 제안
+js에서 private 필드를 만드려면 #을 붙여준다. 예: #name 단, constructor에서는 #을 사용할 수 없다.
+```js
+class Person {
+    #name='Lee'
+}
+const me2 = new Person('LEE')
+me2.#name // Uncaught SyntaxError: Private field '#name' must be declared in an enclosing class
+```
+
+## 25.8.2 extends 키워드
+```js
+class Base{}
+class Derived extneds Base {}
+// 생성자도 상속 가능하다
+function Base(a){
+    this.a=a
+}
+class Derived extends Base {}
+const derived = new Derived(1)
+console.log(derived) // Derived { a:1}
+
+// 조건 상속도 가능하다.
+class Derived extends (true ? Base : Base2) {
+    ...
+}
+```
+
+## 25.8.5 super 키워드
+1. super을 호출하면 수퍼클래스의 constructor를 호출한다.
+2. super을 참조하면 수퍼클래스의 메서드를 호출할 수 있다.
+```js
+class Base {}
+class Derived extends Base {
+    // constructor(...agrs) { super(...args)}  // 암묵적으로 호출된다. 단, 서브클래스에서 constructor을 생략하지 않으면 명시적으로 super을 호출해야 한다.
+}
+```
+3. 서브클래스의 constructor에서 super을 호출하기 전에는 this를 참조할 수 없다.
+4. super는 반드시 서브클래스의 constructor에서만 호출한다.
+5. 메서드 내에서 super을 참조하면 수퍼클래스의 메서드를 호출할 수 있다.
+
+```js
+class Base {
+    constructor(name){
+        this.name=name
+    }
+    sayHi() {
+        return `hi ${this.name}`
+    }
+}
+class Derived extends Base {
+    sayHi() {
+        const __super=Object.getPrototypeOf(Derived.prototype)
+        return `${__super.sayHi.call(this)}`
+    }
+}
+const derived = new Derived('Lee')
+console.log(derived.sayHi()) // hi Lee
+```
+위의 call(this)을 사용하는 이유
+
+Derived의 this는 생성할 인스턴스를 가리킴
+
+Base.this도 생성할 인스턴스를 가리킴
+
+근데 Object.getPrototypeOf(Derived.prototype) 함수 사용해 Base.prototype가져옴
+
+__super.sayHi는 Base.prototype의 함수 호출하기 때문에 인스턴스의 name에 접근 못 함 this.name은 undef나오게 되고
+
+hi Lee가 나오게 하려면 call(this)사용해야 함
+
+JS에서는 super을 사용하면 위와 같이 프로토타입 체인에서 프로퍼티를 찾는데, 이 때에 주어진 메서드의 내부 슬롯[[HomeObject]]에서 그 값을 찾는다.
+
+그렇게하여 this는 인스턴스를 가리키면서 super을 사용해 바로 프로퍼티를 찾는다.
+
+주의할 것은 ES6 메서드 축약 표현만 [[HomeObject]]를 갖는다.
+
+## 25.8.6 상속 클래스의 인스턴스 생성 과정
+JS 엔진은 수퍼클래스와 서브클래스를 구분하기 위해 [[ConstructorKind]]를 갖는다.
+
+서브클래스는 자신이 직접 인스턴스를 생성하지 않고 수퍼클래스에게 인스턴스 생성을 위임한다.
+
+이것이 바로 서브클래스의 constructor에서 반드시 super을 호출해야 하는 이유다.
+
+super가 호출되지 않으면 인스턴스가 생성되지 않으며, this 바인딩도 할 수 없다.
+
+## 25.8.7 표준 빌트인 생성자 함수 확장
+클래스뿐만이 아니라 [[Construct]] 속성을 갖고있는 객체도 extends 키워드를 사용할 수 있다.
+```js
+class MyArray extends Array {
+    uniq() {
+        return this.filter((v,i,self) => self.indexOf(v)===i)
+    }
+    average() {
+        return this.reduce((pre, cur) => per+cur, 0) / this.length
+    }
+}
+const myArray = new MyArray(1,1,2,3)
+console.log(myArray) // [1, 1, 2, 3]
+console.log(myArray.uniq()) // [1, 2, 3]
+console.log(myArray.average()) // 1.75
+
+// filter가 MyArray를 반환하므로 메서드 체이닝도 가능하다.
+console.log(myArray.filter(v=>v%2).uniq().average())
+```
+
+만약 MyArray 클래스의 uniq메서드가 MyArray 클래스가 생성한 인스턴스가 아닌 Array를 반환하게 하려면 Symbol.species를 사용하여 정적 접근자 프로퍼티를 추가한다.
+```js
+class MyArray extends Array {
+    // 모든 메서드가 Array 인스턴스를 반환하도록 한다.
+    static get [Symbol.species]() { return Array }
+    ...
+}
+```
