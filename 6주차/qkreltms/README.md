@@ -469,3 +469,147 @@ console.log(foo.length) // 1
 4. Rest 파라미터에는 기본값을 지정할 수 없다.
 
 * NOTE: 기본 값은 arguments에 영향을 끼치지 않는다.
+
+# 27 배열
+## 27.2 자바스크립트 배열은 배열이 아니다.
+각 요소가 동일한 크기를 가지며, 빈틈없이 연속적으로 이어져 있다.
+
+배열의 원소가 연속적으로 이어져 있지 않는 배열을 희소 배열(sparse(부족한) array) 이라 한다.
+
+자바스크립트 배열은 일반적인 배열의 동작을 흉내 낸 특수한 객체이다. 그러나 내부적으로 최적화가 되어 순회가 객체보다 약 2배 빠르다.
+```js
+console.log(Object.getOwnPropertyDescriptors([1,2,3]))
+
+0: {value: 1, writable: true, enumerable: true, configurable: true}
+1: {value: 2, writable: true, enumerable: true, configurable: true}
+2: {value: 3, writable: true, enumerable: true, configurable: true}
+length: {value: 3, writable: true, enumerable: false, configurable: false}
+__proto__: Object
+```
+
+## 27.3 length 프로퍼티와 희소 배열
+희소 배열은 데이터가 연속적으로 놓이지 않아 성능에 좋지 않다.
+
+현재 length 프로퍼티 값보다 작은 숫자 값을 할당하면 배열의 길이가 줄어든다.
+
+큰 값을 할당하면 length 값이 변경은 되지만 실제로 배열의 길이가 늘어나지 않으며 빈 요소를 생성하지도 않는다.
+```js
+const arr = [1,2,3,4,5]
+arr.length = 3
+console.log(arr) // [1,2,3]
+
+const arr2 = [1,2,3,4,5]
+arr2.length = 100
+console.log(arr2) // [1, 2, 3, 4, 5, empty × 95], 이처럼 일부가 비어 있는 배열을 희소 배열이라 한다.
+console.log(arr2[66]) // undefined
+
+const arr3 = [1,,3,,5]
+console.log(arr3) // [1, empty, 3, empty, 5]
+```
+## 27.4.3 Array.of
+전달된 인수를 요소로 갖는 배열을 생성한다.
+```js
+Array.of(1) // [1]
+Array.of('string') // ['string']
+Array.of(1,2,3) // [1,2,3]
+```
+## 27.4.4 Array.from
+유사 배열 객체 또는 이터러블 객체를 배열로 만든다.
+```js
+Array.from({'length':10,0:'a'}) // ["a", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]
+Array.from('hello') // ["h", "e", "l", "l", "o"]
+```
+## 27.6 배열 요소의 추가와 갱신
+```js
+const arr = [0]
+arr[100]=100
+console.log(arr) // [0, empty × 99, 100]
+arr.bar=5
+arr[1.1]=5
+arr[-1]=6
+console.log(arr)// [0, empty × 99, 100, bar: 5, 1.1: 5,'-1':6]
+arr[1.1]
+arr.length // 101, 프로퍼티는 length에 영향을 주지 않는다.
+```
+
+## 27.7 배열 요소의 삭제
+```js
+const arr = [1,2,3]
+delete arr[1]
+console.log(arr) // [1,empty, 3]
+
+// delete는 희소배열을 만드므로 이것 보다는 splice 사용 권장
+const arr = [1,2,3]
+arr.splice(1,1)
+consol.log(arr) // [1,3]
+```
+
+## 27.8.5 Array.prototype.unshift
+원본 배열의 선두에 요소를 추가하고 변경된 length 프로퍼티 값을 반환한다. 원본 배열을 변경한다.
+
+## 27.8.6 Array.prototype.shift
+배열의 첫 번째 요소를 제거하고 제거한 요소를 반환한다.
+
+## 27.8.7 Array.prototype.concat
+```js
+const arr1 = [1,2]
+const arr2 = [3,4]
+let result = arr1.concat(arr2)
+console.log(result) // [1,2,3,4]
+
+arr1.concat(3) // [1,2,3], 숫자가 주어지면 배열 요소로 추가한다.
+arr1.concat(arr2, 5) // arr2와 5를 추가한다.
+```
+## 27.8.8 Array.prototype.splice
+요소를 추가하거나 제거한다. 원본을 변경한다.
+```js
+const arr = [1,2,3,4]
+const result = arr.splice(1,2,20,30) // 원본 배열의 익덱스 1부터 2개의 요소를 제거하고 그 자리에 새로운 요소 20, 30을 삽입한다.
+console.log(result) // [2,3], 자른 값
+console.log(arr) // [1,20,30,4], 원본의 변경된 값
+
+arr.splice(1) // 원본 배열의 인덱스 1부터 모든 요소를 제거한다.
+```
+## 27.8.9 Array.porototype.slice
+splice와 유사하나 원본 배열을 변경하지 않는다. 원본 배열을 얕은 복사해 반환한다.
+```js
+const arr = [1,2,3]
+arr.slice(1) // [2,3], 복사해 반환
+
+const arr=[1,2,3]
+arr.slice(-1) // [3], 마지막 요소 복사 반환
+arr.slice(-2) // [2,3]
+
+arr.slice() // 인수가 없으면 배열의 모든 값을 복사해 반환한다.
+```
+
+## 27.8.14 Array.prototype.flat
+```js
+[1,[2,[3,[4]]]].flat() // [1, 2, Array(2)], 기본값 1 평탄화할 깊이를 받는다.
+[1,[2,[3,[4]]]].flat(Infinity) // [1, 2, 3, 4]
+```
+
+## 27.9 배열 고차 함수
+고차 함수는 함수를 인수로 전달받거나 함수를 반환하는 함수를 말한다.
+
+고차 함수는 외부 상태의 변경이나 가변 데이터를 피하고 불변성을 지향하는  함수형 프로그래밍에 기반을 두고 있다.
+
+## 27.9.1 Array.prototype.sort
+기본 정렬 순서는 유니코드의 순서를 따른다.
+
+```js
+['2', '10'].sort() // ['10','2']
+[2, 10].sort() // [10, 2]
+
+// 숫자 배열의 오름차순 정렬, 반환값이 0보다 작으면 a를 우선하여 정렬한다.
+[40,100,1,5,2,25,10].sort((a,b) => a-b)
+```
+
+## 27.9.6 Array.prototype.some
+주어진 배열을 순회하면서 콜백 함수의 반환값이 단 한 번이라도 참이면 true, 아니면 false를 반환한다.
+
+## 27.9.7 Array.prototype.every
+모두 참이면 true, 단 한번이라도 거짓이면 false를 반환한다.
+
+## 27.9.10 Array.prototype.flatMap
+flat 1단계 + map
