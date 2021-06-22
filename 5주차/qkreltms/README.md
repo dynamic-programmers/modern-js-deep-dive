@@ -234,7 +234,7 @@ x=1
 
 모든 코드는 실행 컨텍스트를 통해 실행되고 관리된다.
 
-다음의 코드를 설명한다.
+다음의 코드를 설명한다.(예제1)
 ```js
 var x=1
 const y=2
@@ -279,6 +279,45 @@ console.log를 설명하자면, 먼저, bar 컨텍스트 확인, foo 확인, 전
 12. foo 함수 코드 실행 종료
 13. 전역 코드 실행 종료
 주기적으로 GC가 돌 때 누군가에 의해 참조되지 않은 컨택스트는 소멸한다.
+
+다음의 코드를 설명한다.(예제2)
+```js
+var a=1
+var b=1
+function outer() {
+  console.log(a)
+  function inner() {
+    console.log(a,b)
+    var a = 3
+  }
+  inner()
+  console.log(a)
+}
+outer()
+console.log(a)
+// 결과: 1, undefined, 1, 1, 1
+```
+1. global 실행 컨택스트가 생성된다.
+2. 전역 코드 평가
+3. 전역 렉시컬  생성된다.
+4. binding object인 window에 a:undefined,b:undefined,outer: undefined가 설정된다.
+5. 전역 코드 실행
+6. a,b에 각각 1,1 이 설정되고 outer이 실행된다.
+7. outer 코드 평가
+8. outer 실행 컨택스트가 생성된다.
+9. outer 렉시컬 환경이 생성된다.
+10. outer 환경 레코드에 inner: undefined가 설정된다.
+11. outer 코드 실행
+12. outer 환경 레코드에 a가 없으므로 렉시컬 환경을 타고 올라가 전역 렉시컬 환경으로 이동해 전역에 있는 a: 1이 출력됨
+13. inner 코드 평가
+14. inner 실행 컨택스트 생성
+15. inner 렉시컬 환경 생성
+16. inner 환경 레코드에 a: undefined가 설정된다.
+17. inner 코드 실행
+18. inner 환경 레코드의 a가 아직 3이 설정 전이므로 undefined이다.(호이스팅) b는 전역 렉시컬 환경으로 이동해 1 출력
+19. outer에서 console.log(a)가 출력된다. outer에는 a 가 없으므로 렉시컬 환경을 타고 올라가 전역에서 1가져와 출력
+20. 전역의 console.log(a)출력, 전역 렉시컬 환경의 1을 출력한다.
+![예제2](예제2.jpg)
 
 ## 23.7 실행 컨텍스트와 블록 레벨 스코프
 let, const, if, for, while, try, catch 등 지역 스코프는 블록 레벨 스코프를 따른다.
