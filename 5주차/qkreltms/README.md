@@ -247,7 +247,7 @@ function foo(a){
   }
   bar(10)
 }
-foo(2) //42
+foo(2) //24
 ```
 
 ![실행컨텍스트2](context2.jpg)
@@ -273,7 +273,7 @@ foo(2) //42
 
 console.log를 설명하자면, 먼저, bar 컨텍스트 확인, foo 확인, 전역 렉시컬 환경으로 이동하여 console 식별자 검색
 
-표현식 a+b+x+y+z의 평가를 설명하자면, a,x,y는 foo에서, b,z는 bar에서 검색한다.
+표현식 a+b+x+y+z의 평가를 설명하자면, a,x,y는 foo에서, b,z는 bar에서 검색한다. 결과: 24
 
 11. bar 함수 코드 실행 종료
 12. foo 함수 코드 실행 종료
