@@ -317,3 +317,55 @@ const [f1,f2,f3] = fibonacciFunc()
 console.log(f1,f2,f3)
 ```
 # 35 스프레드 문법
+ES6에서 도입된 문법으로 하나로 뭉쳐 있는 여러 값들의 집합을 펼쳐 개별적인 값들의 목록으로 만든다.
+
+for...of로 순회할 수 있는 이터러블에 사용가능하다. 단, proposal-object-rest-spread를 적용하면 오브젝트에서도 스프레드 문법을 사용가능하다.
+
+스프레드 문법의 결과는 값이 아니다.
+```js
+const list = ...[1,2,3] // error
+```
+스프레드 문법을 쓰면 Max를 구할 때 아래와 같이 쓸 수 있다.
+```js
+const arr = [1,2,3]
+const max2 = Math.max.apply(null, arr)
+const max = Math.max(...arr)
+```
+splice도 다음과 같이 사용가능하다.
+```js
+const arr1=[1,4]
+const arr2=[2,3]
+arr1.splice(1,0,...arr2)
+arr1 // [1, 2, 3, 4]
+```
+
+slice 대신 스프레드 문법을 쓴다.
+```js
+const origin = [1,2]
+const copy = [...origin]
+``` 
+
+이터러블을 배열로 변환하기
+```js
+const arrayLike = {
+    0:1,
+    1:2,
+    2:3,
+    length:3
+}
+Array.prototype.slice.call(arrayLike) // [1,2,3]
+
+const sum = () => [...arguments].reduce((pre,cur) => pre+cur, 0)
+// 또는 rest 사용해서
+const sum = (...args) => args.reduce((pre, cur) => pre+cur, 0)
+sum(1,2,3)
+```
+
+객체 리터럴 사용하기.
+```js
+// 스프레드 문법 이전
+// 프로퍼티가 중복되는 경우에 뒤에 위치한 프로퍼티가 우선권을 갖는다.
+Object.assign({}, {x:1,y:2}, {y:10,z:3}) // {x: 1, y: 10, z: 3}
+
+{...{x:1,y:2}, ...{y:10,z:3}} // {x: 1, y: 10, z: 3}
+```
