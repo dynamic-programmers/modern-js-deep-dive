@@ -102,6 +102,77 @@ isTrusted               사용자의 행위에 의해 발생한 이벤트인지 
                         false
 timeStamp               이벤트가 발생한 시각(1970/01/01/00:00:0)부터 경과한 밀리초          number
 ```
+## 40.6 이벤트 전파
+요소의 이벤트가 발생하면
+1. 캡처링: window에서부터 이벤트 타깃 방향으로 전파
+2. 타켓: 이벤트 타깃에 도달
+3. 버블링: 이벤트 타깃에서 시작해 window 방향으로 전파
+## 40.7 이벤트 위임
+여러 개의 하위 DOM 요소에 각각 이벤트 핸들러를 등록하는 대신 하나의 상위 DOM 요소에 이벤트 핸들러를 등록하여 
+
+개별로 등록하지 않아도 됨
+
+## 40.8 DOM 요소의 기본 동작 조작
+DOM 요소는 저마다 기본 동작이 있다.
+
+예를 들어 a 요소를 클릭하면 href 어트리뷰트에 지정된 링크로 이동.
+
+이벤트 객체의 preventDefault 메서드를 호출함으로써 이 기본 동작을 중단시킬 수 있다.
+## 40.8.2 이벤트 전파 방지
+stopPropagation 메서드를 사용해 호출 시점에서부터 캡처링 & 버블링 전파를 중단시킨다.
+## 40.9 이벤트 핸들러 내부의 this
+이벤트 핸들러를 호출할 때 인수로 전달한 this는 이벤트를 바인딩한 DOM 요소를 가리킨다.
+```html
+<button onclick="handleClick(this)"></button>
+<script>
+    function handleClick(button) {
+        console.log(button) // 이벤트를 바인딩한 button 요소
+        console.log(this) // window
+    }
+</script>
+```
+## 40.9.2 이벤트 핸들러 프로퍼티 방식과 addEventListener 메서드 방식
+```html
+<button class='btn1'></button>
+<button class='btn2'></button>
+<script>
+    const $button1 = document.querySelector('.btn1')
+    const $button2 = document.querySelector('.btn2')
+    $button1.onclick = function (e) {
+        // 이벤트 핸들러 내부의 this는 이벤트를 바인딩한 DOM 요소를 가리킨다.
+        console.log(this) // $button1
+    }
+    $button2.addEventListener('click', function (e) {
+        console.log(this) // $button2
+    })
+</script>
+```
+
+아래의 경우도 위와 마찬가지이다.
+```html
+<button class='btn'></button>
+<script>
+    class App {
+        constructor() {
+            this.$button = document.querySelector('.btn')
+            this.$button.onclick = this.increase
+        }
+        increase() {
+            this.$button.textContent = ++this.count // 여기서의 this는 button element이므로 잘못된 값이 나온다.
+        }
+    }
+</script>
+```
+## 40.11 커스텀 이벤트
+```js
+// 앞서 언급했듯 아래의 함수를 호출해 커스텀 이벤트를 만들 수 있다.
+new KeyboradEvent('keyup')
+new CustomEvent('foo')
+```
+커스텀 이벤트는 isTrusted 프로퍼티가 언제가 false(인위적)이다.
+## 40.11.2 커스텀 이벤트 디스패치
+커스텀 이벤트는 onclick과 같은 어트리뷰트로 이벤트 핸들러 등록을 할 수 없으므로 addEventListener 방식으로 등록해야 한다.
+
 # 41 타이머
 # 42 비동기 프로그래밍
 # 43 Ajax
