@@ -1,5 +1,7 @@
 # 40 이벤트
 ## 40.1 이벤트 드리븐 프로그래밍
+프로그램의 흐름을 이벤트 중심으로 제어하는 프로그래밍 방식
+
 브라우저는 처리해야 할 특정 사건이 발생하면 이를 감지하여 이벤트를 발생시킨다.
 ```js
 const button = document.querySelector('button')
@@ -188,6 +190,48 @@ param1,2,...        콜백 함수에 전달해야 할 인수가 존재할 경우
 디바운스: 일정 시간 동안 이벤트 핸들러 호출하지 않다가(무시) 일정 시간이 경과한 이후에 이벤트 한번만 호출
 
 스로틀: 이벤트 발생시 일정 시간이 지나기 전에 다시 호출되지 않도록 함
+
+```js
+<button>click</button>
+<div> 일반 클릭 이벤트 카운터 <span class="normal-msg">0</span></div>
+<div> 디바운스 클릭 이벤트 카운터 <span class="debounce-msg">0</span></div>
+<div> 스로틀 클릭 이벤트 카운터 <span class="throttle-msg">0</span></div>
+
+<script>
+	const $button = document.querySelector('button');
+	const $normalMsg = document.querySelector('.normal-msg');
+	const $debounceMsg = document.querySelector('.debounce-msg');
+	const $throttleMsg = document.querySelector('.throttle-msg');
+
+	const debounce = (callback, delay) => {
+		let timerId;
+		return event => {
+			if (timerId) clearTimeout(timerId);
+			timerId = setTimeout(callback, delay, event);
+		};
+	};
+	const throttle = (callback, delay) => {
+		let timerId; 
+		return event => {
+			if (timerId) return;
+			timerId = setTimeout(() => {
+				callback(event);
+				timerId = null;
+			}, delay, event);
+		};
+	};
+	$button.addEventListener('click', {
+		$buttonMsg.textContext = +$normalMsg.textContext + 1;
+	});
+
+	$button.addEventListener('click', debounce(() => {
+		$debounceMsg.textContent = +$debounceMsg.textContent + 1;
+	}, 500));
+	$button.addEventListener('click', throttle(() => {
+		$debounceMsg.textContent = +$debounceMsg.textContent + 1;
+	}, 500));
+</script>
+```
 # 42 비동기 프로그래밍
 ## 42.1 동기 처리와 비동기 처리
 자바스크립트 엔진은 단 하나의 실행 컨택스트 스택을 갖고 싱글 스레드 방식으로 동작한다.
