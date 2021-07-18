@@ -174,5 +174,138 @@ new CustomEvent('foo')
 커스텀 이벤트는 onclick과 같은 어트리뷰트로 이벤트 핸들러 등록을 할 수 없으므로 addEventListener 방식으로 등록해야 한다.
 
 # 41 타이머
+## 41.2 타이머 함수
+## 41.2.1 setTimeout / clearTimeout
+```
+매개변수            설명
+func                타이머가 만료된 뒤 호출된 콜백
+delay               타이머 만료시간
+param1,2,...        콜백 함수에 전달해야 할 인수가 존재할 경우
+```
+
+## 41.2.2 setInterval / clearInterval
+## 41.3 디바운스와 스로틀
+디바운스: 일정 시간 동안 이벤트 핸들러 호출하지 않다가(무시) 일정 시간이 경과한 이후에 이벤트 한번만 호출
+
+스로틀: 이벤트 발생시 일정 시간이 지나기 전에 다시 호출되지 않도록 함
 # 42 비동기 프로그래밍
+## 42.1 동기 처리와 비동기 처리
+자바스크립트 엔진은 단 하나의 실행 컨택스트 스택을 갖고 싱글 스레드 방식으로 동작한다.
+
+그렇기 때문에 시간이 걸리는 태스크를 실행할 경우 블로킹이 발생한다.
+
+그러나 아래의 경우 블로킹이 발생하지 않는다.
+```js
+function foo(){}
+function bar(){}
+
+setTimeout(foo, 1000)
+bar()
+// bar이 먼저 실행되고 foo가 다음에 실행된다.
+```
+## 42.2 이벤트 루프와 태스크 큐
+자바스크립트는 싱글 스레드이지만 브라우저가 동시에 처리되는 것처럼 느껴진다.
+
+자바스크립트의 동시성을 지원하는 것이 바로 이벤트 루프이다.
+
+![이벤트루프](이벤트루프.jpg)
+구글의 V8 자바스크립트 엔진을 비롯한 대부분의 자바스크립트 엔진은 크게 2개의 영역으로 구분할 수 있다.
+1. 콜 스택: 실행 컨텍스트가 바로 콜 스택이다.
+함수를 호출하면 함수 실행 컨텍스트가 순차적으로 콜 스택에 푸시되어 순차적으로 실행된다. 자바스크립트 엔진은 단 하나의 콜 스택을 사용하기 때문에 최상위 실행 컨텍스트가 종료되어 콜 스택에서 제거되기 전까지는 다른 어떤 태스크도 실행되지 않는다.
+
+2. 힙: 객체가 저장되는 메모리 공간
+객체는 원시 값과는 달리 크기가 정해져 있지 않으므로 할당해야 할 메모리 공간의 크기를 런타임에 결정해야 한다. 
+
+자바스크립트 엔진은 단순히 태스크가 요청되면 콜 스택을 통해 요청된 작업을 순차적으로 실행할 뿐이다.
+
+비동기 처리에서 소스코드의 평가와 실행을 제외한 모든 처리는 자바스크립트 엔진을 구동하는 환경인 브라우저 또는 Node.js가 담당한다.
+
+이를 위해 브라우저 환경은 태스크 큐와 이벤트 루프를 제공한다.
+
+- 태스크 큐: setTimeout이나 setInterval 같은 비동기 함수의 콜백 함수 또는 이벤트 핸들러가 일시적으로 보관되는 영역이다.
+- 이벤트 루프: 콜 스택에 현재 실행 중인 실행 컨텍스트가 있는지, 그리고 태스크 큐에 대기 중인 함수가 있는지 반복해서 확인한다. 만약 콜 스택이 비어 있고 태스크 큐에 대기 중인 함수가 있다면 이벤트 루프틑 순차적으로 태스크 큐에 대기 중인 함수를 콜 스택으로 이동시킨다.
+
+```js
+function foo(){}
+function bar(){}
+
+setTimeout(foo, 1000)
+bar()
+// bar이 먼저 실행되고 foo가 다음에 실행된다.
+```
+1. 전역 코드가 평가되어 전역 실행 컨텍스트가 생성되고 콜 스택에 푸시된다.
+2. 전역 코드가 실행되기 시작하여 setTimeout 함수가 호출된다. 
+3. setTimeout 함수가 실행 컨텍스트에 올라가서 호출되고 브라우저에서 타이머가 발동된다.
+4. 호출이 끝나면 실행 컨텍스트에서 팝된다.
+5. foo 함수가 태스크 큐에 푸시되어 대기하게 된다. 
+6. bar 함수를 실행 컨텍스트에 올리고 실행, 팝 된다.
+7. 전역 코드 실행이 종료되어 팝된다.
+8. 이벤트 루프에의해 실행 컨텍스트가 비었고 타이머가 완료됐다는 것을 탐지된다.
+9. foo 함수가 콜 스택에 올라오고 실행, 팝 된다.  
 # 43 Ajax
+Ajax란 자바스크립트를 사용하여 브라우저가 서버에게 비동기 방식으로 데이터를 요청하고, 서버가 응답한 데이터를 수신하여 웹페이지를 동적으로 갱신하는 프로그래밍 방식을 말한다.
+
+## 43.2 JSON
+클라이언트와 서버 간의 HTTP 통신을 위한 텍스트 데이터 포맷이다.
+
+언어 독립형 데이터 포맷으로, 대부분의 프로그래밍 언어에서 사용할 수 있다.
+
+## 43.3 XMLHttpRequest
+자바스크립트를 사용하여 HTTP 요청을 전송하려면 XMLttpRequest 객체를 사용한다.
+
+## 43.3.2 XMLHttpRequest 객체의 프로퍼티와 메서드
+```
+프로토타입 프로퍼티                 설명
+readyState                         HTTP요청의 현재 상태 UNSENT:0, OPENED: 1, HEADERS_RECEIVED: 2, LOADING: 3, DONE: 4
+status                              HTTP 요청에 대한 응답 상태
+statusText                          HTTP 요청에 대한 응답 메시지
+responseType                        HTTP 응답 타입
+response                            HTTP 요청에 대한 응답 몸체
+responseText                        서버가 전송한 HTTP 요청에 대한 응답 문자열
+
+이벤트 핸들러 프로퍼티              설명
+onreadystatechange                  readyState 프로퍼티가 변경된 경우
+onloadstart                         HTTP 요청에 대한 응답을 받기 시작한 경우
+onprogress                          HTTP 요청에 대한 응답을 받는 도중 주기적으로 발생
+onabort                             abort 메서드에 의해 HTTP 요청이 중단된 경우
+onerror                             HTTP 에러 발생
+onload                              HTTP 요청 완료
+ontimeout                           HTTP 요청 시간 초과
+onloadend                           HTTP 요청 완료(성공 또는 실패)
+
+메서드                              설명
+open                                HTTP 요청 초기화
+send                                HTTP 요청 전송
+abort                               이미 전송된 HTTP 요청 중단
+setRequestHeader                    특정 HTTP 요청 헤더의 값을 설정
+getResponseHeader                   특정 HTTP 요청 헤더의 값을 문자열로 반환
+
+정적 프로퍼티                       값      설명
+UNSENT                              0       open 메서드 호출 이전
+OPENED                              1       open 메서드 호출 이후
+HEADERS_RECEIVED                    2       send 메서드 호출 이후
+LOADING                             3       서버 응답 중
+DONE                                4       서버 응답 완료
+```
+
+## 43.3.3 HTTP 요청 전송
+```js
+const xhr = new XMLHttpRequest()
+xhr.open('GET', '/url')
+xhr.setRequestHeader('content-type', 'application/json')
+xhr.send()
+xhr.onreadystatechage = () => {
+    // 응답이 완료되지 않았으면 그냥 종료
+    if (xhr.readyState !== XMLHttpRequest.DONE) return
+    if (xhr.status === 200) {
+        console.log(xhr.response)
+    }
+}
+
+xhr.onload = () => {
+    // onload를 사용하면 if (xhr.readyState !== XMLHttpRequest.DONE) return 을 확인하지 않아도 된다.
+    if (xhr.status === 200) {
+        console.log(xhr.response)
+    }
+}
+```
