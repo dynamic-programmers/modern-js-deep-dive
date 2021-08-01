@@ -115,4 +115,53 @@ Promise.resolve().then(() => console.log(2)).then(() => console.log(3))
 
 왜냐하면 Promise를 담아두는 마이크로태스크 큐가 존재하고, 이벤트 루프의 선택 우선순위가 setTimeout이 담겨있는 태스크큐보다 높다.
 # 46 제너레이터와 async/await
+## 46.1 제너레이터란?
+1. 함수 호출자에게 함수 실행의 제어권을 양도할 수 있다.
+2. 함수 호출자와 함수의 상태를 주고받을 수 있다.
+3. 제너레이터 객체를 반환한다.
+## 46.2 제너레이터 함수의 정의
+function* 키워드로 선언한다. 그리고 하나 이상의 yield 표현식을 포함한다.
+```js
+function* genDecFunc() {
+    yield 1;
+}
+const genExpFunc = function* () {
+    yield 1
+}
+const getArrowFunc = * () => {
+    yield 1;
+}
+const obj = {
+    * genObjMethod() {
+        yield 1;
+    }
+}
+class MyClass {
+    * genClsMethod() {
+        yield 1;
+    }
+}
+
+//제너레이터 함수는 new 연산자와 함께 생성자 함수로 호출할 수 없다.
+function* genFunc() {
+    yield 1;
+}
+new getFunc()
+```
+애스터리스크(*)의 위치는 function 키워드와 함수 이름 사이라면 어디든지 상관없다.
+
+## 46.3 제너레이터 객체
+제너레이터 함수를 호출하면 일반 함수처럼 코드 블록을 실행하는 것이 아니라 제너레이터 객체를 생성해 반환한다. 제너레이터 객체는 이터러블이면서 동시에 이터레이터이다.
+
+다시 말해, 제너레이터 객체는 Symbol.iterator 메서드를 상속받는 이터러블이면서 value, done 프로퍼티를 갖는 이터레이터 객체를 반환하는 next 메서드를 소유하는 이터레이터이다.
+
+추가적으로 이터레이터에 없는 return, throw 함수도 포함하고 있다.
+```js
+generator.return('End') // { value: 'End', done: true}
+generator.throw('Error') // { value: undefined, done: true}
+```
+
+## 46.4 제너레이터의 일시 중지와 재개
+
+
 # 47 에러 처리
