@@ -285,7 +285,7 @@ Base.this도 생성할 인스턴스를 가리킴
 
 근데 Object.getPrototypeOf(Derived.prototype) 함수 사용해 Base.prototype가져옴
 
-__super.sayHi는 Base.prototype의 함수 호출하기 때문에 인스턴스의 name에 접근 못 함 this.name은 undef나오게 되고
+__super.sayHi는 Base.prototype의 함수를 호출하기 때문에 인스턴스의 name에 접근 못 함 this.name은 undef나오게 되고
 
 hi Lee가 나오게 하려면 call(this)사용해야 함
 
@@ -435,10 +435,12 @@ Person.prototype = {
 const person = new Person('lee')
 person.sayHi() // Hi Lee
 ```
+
+```
 클래스 필드에 화살표 함수를 할당할 수 있지만, 좋지 않다.
 ```js
 class Person {
-    name='Lee',
+    name='Lee'
     sayHi=()=>console.log(`Hi ${this.name}`)
 }
 const person=new Person()
@@ -446,7 +448,33 @@ person.sayHi() // Hi Lee
 ```
 
 클래스 필드에 할당한 화살표 함수의 this는 프로토타입 메서드가 아니라 인스턴스 메서드가 된다.
+```js
+class Person {
+    name='Lee'
+    sayHi=()=>{ console.log(`Hi ${this.name}`) }
+}
 
+class Test extends Person {
+  test() {
+    super.sayHi()
+  }
+}
+new Test().test() // Uncaught TypeError: (intermediate value).sayHi is not a function
+```
+다음과 같이 바꾸면 해결된다.
+```js
+class Person {
+    name='Lee'
+    sayHi() { console.log(`Hi ${this.name}`) }
+}
+
+class Test extends Person {
+  test() {
+    super.sayHi()
+  }
+}
+new Test().test() // Hi Lee
+```
 ## 26.3.4 super
 화살표 함수의 super는 상위 스코프의 super를 참조한다.
 
