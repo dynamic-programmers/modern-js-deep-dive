@@ -475,6 +475,20 @@ class Test extends Person {
 }
 new Test().test() // Hi Lee
 ```
+화살표 함수가 겹쳐있다고 하더라고 this는 그것의 상위를 가리킨다.
+```js
+// 화살표 함수 밖의 this에서 찾음, 단 const로 바꾸면 안됨 (왜??)
+var b = 2
+const a = () => {
+  var b = 1
+  setTimeout(() => {
+    // 화살표 함수 밖의 this에서 찾음
+    console.log(this.b)
+  })
+}
+
+a() // 2
+```
 ## 26.3.4 super
 화살표 함수의 super는 상위 스코프의 super를 참조한다.
 
