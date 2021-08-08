@@ -32,7 +32,7 @@ var add = function add(x,y) { return x+y }
 
 반면에 foo는 참조가 가능하다 왜냐면 자바스크립트 엔진이 암묵적으로 함수 이름과 동일한 식별자를 생성하고, 거기에 함수 객체를 할당한다.
 ```js
-function foo { console.log('foo') }
+function foo() { console.log('foo') }
 (function bar() { console.log('bar') })
 foo()// foo
 bar()// ReferenceError: bar is not defined

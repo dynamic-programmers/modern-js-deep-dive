@@ -148,7 +148,7 @@ function test() {
   }
 }
 var c = new test() // test
-c.inner()// test
+c.inner()// test {inner: ƒ}
 
 // 객체 리터럴은 인스턴스 생성 안해도 this가 자기자신 가리킴
 const Person = {
