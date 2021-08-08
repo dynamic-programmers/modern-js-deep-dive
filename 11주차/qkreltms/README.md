@@ -162,6 +162,108 @@ generator.throw('Error') // { value: undefined, done: true}
 ```
 
 ## 46.4 제너레이터의 일시 중지와 재개
+yield 표현식까지만 실행, yield 키워드는 제너레이터 함수의 실행을 일시 중지시키거나 yield 키워드 뒤에 오는 표현식의 평가 결과를 제너레이터 함수 호출자에게 반환한다.
 
+```js
+function* genFunc() {
+    yield 1;
+    yield 2;
+    yield 3;
+}
+genFunc().next() // { value: 1, done: false }
+genFunc().next() // { value: 2, done: false }
+genFunc().next() // { value: 3, done: false }
+genFunc().next() // { value: undefined, done: true }
+```
 
+```js
+function* genFunc() {
+    const x = yield 1; // 1. next 호출시 여기서 멈춘다.
+    const y = yield (x+10); // 2. next 호출시 여기서 멈춘다. // 3. next 호출시 여기서 값을 받고.
+    return x+y // 3. x+y를 진행한다.
+}
+
+const gen = genFunc()
+console.log(gen.next()) // {value: 1, done: false}
+console.log(gen.next(11)) // {value: 21, done: false}
+console.log(gen.next(0)) // {value: 11, done: false}
+```
+## 46.5 제너레이터의 활용
+1. 이터러블의 구현
+```js
+const infiniteFibonacci = (function() {
+    let [pre, cur] = [0, 1]
+    return {
+        [Symbol.iterator]() { return this },
+        next() {
+            [pre, cur] = [cur, pre+cur]
+            return { value: cur }
+        }
+    }
+})()
+
+for (const num of infiniteFibonacci) {
+    if (num > 10000) break
+    console.log(num)
+}
+```
+제너레이터 버전
+```js
+const infiniteFibonacci = (function() {
+    let [pre, cur] = [0, 1]
+    while (true) {
+        [pre, cur] = [cur, pre + cur]
+        yield cur
+    }
+})()
+
+for (const num of infiniteFibonacci) {
+    if (num > 10000) break
+    console.log(num)
+}
+```
+2. 비동기 처리
 # 47 에러 처리
+## 47.1 에러 처리의 필요성
+에러에 대처하지 않고 방치하면 프로그램은 강제 종료된다.
+
+try, catch 문을 사용하여 에러에 대응한다.
+
+## 47.3 Error 객체
+```
+생성자 함수             인스턴스
+Error                   일반적 에러 객체
+SyntaxError             자바스크립트 문법 에러
+ReferenceError          참조 에러
+TypeError               타입 유요하지 않을 때 에러
+RangeError              숫자값의 허용 범위를 벗어남
+URIError                encodeURI 또는 decodeURI 함수에 적절치 않은 인수 전달
+EvalError               eval 함수 에러
+```
+
+## 에러의 전파
+에러는 컨텍스트 아래 방향(실행 중인 실행 컨텍스트가 푸시되기 직전에 푸시된 실행 컨텍스트 방향)으로 전파된다.
+
+```js
+const foo = () => {
+    throw Error('foo') // 4
+}
+const bar = () => {
+    foo() //3
+}
+const baz = () => {
+    bar() // 2
+}
+try {
+    baz() // 1
+} catch (error){
+    console.log(error)
+    /*
+    Error: foo
+    at foo (pen.js?key=pen.js-8cda1641-50ea-e49d-6689-2ef32e6e6c47:2)
+    at bar (pen.js?key=pen.js-8cda1641-50ea-e49d-6689-2ef32e6e6c47:5)
+    at baz (pen.js?key=pen.js-8cda1641-50ea-e49d-6689-2ef32e6e6c47:8)
+    at pen.js?key=pen.js-8cda1641-50ea-e49d-6689-2ef32e6e6c47:11
+    */
+}
+```
